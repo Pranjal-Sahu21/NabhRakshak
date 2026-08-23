@@ -1,0 +1,11 @@
+# Vercel Ignore File
+node_modules/
+**/node_modules/
+backend/venv/
+backend/__pycache__/
+**/__pycache__/
+frontend/build/
+frontend/node_modules/
+.git/
+.DS_Store
+*.log
