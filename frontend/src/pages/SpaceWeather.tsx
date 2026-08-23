@@ -588,19 +588,19 @@ const SpaceWeather = () => {
           <h4 className="text-sm font-normal text-white uppercase tracking-wider mb-3">7-Day Space Weather Forecast</h4>
           <div className="space-y-3">
             {[
-              { title: 'Next 24 Hours', forecast: data.forecast.day_1 },
-              { title: '3-Day Outlook', forecast: data.forecast.day_3 },
-              { title: '7-Day Outlook', forecast: data.forecast.day_7 },
+              { title: 'Next 24 Hours', forecast: data?.forecast?.day_1 || { kp_max: 0, flare_class: 'N/A', hazard_level: 'Low' } },
+              { title: '3-Day Outlook', forecast: data?.forecast?.day_3 || { kp_max: 0, flare_class: 'N/A', hazard_level: 'Low' } },
+              { title: '7-Day Outlook', forecast: data?.forecast?.day_7 || { kp_max: 0, flare_class: 'N/A', hazard_level: 'Low' } },
             ].map(({ title, forecast }) => {
-              const styles = getHazardStyles(forecast.hazard_level);
+              const styles = getHazardStyles(forecast?.hazard_level);
               return (
                 <div key={title} className={`flex justify-between items-center p-2.5 bg-black/40 border-l-2 ${styles.border} rounded-r-lg`}>
                   <div>
                     <div className="text-xs font-normal text-white">{title}</div>
-                    <div className="text-[10px] text-gray-500">Max Kp: {forecast.kp_max} | Flare: {forecast.flare_class}</div>
+                    <div className="text-[10px] text-gray-500">Max Kp: {forecast?.kp_max} | Flare: {forecast?.flare_class}</div>
                   </div>
                   <span className={`text-xs px-2.5 py-0.5 rounded font-medium ${styles.badge}`}>
-                    {forecast.hazard_level}
+                    {forecast?.hazard_level}
                   </span>
                 </div>
               );
