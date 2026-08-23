@@ -59,7 +59,8 @@ const FALLBACK_DATA: Record<string, any> = {
         ],
         forecast: {
             day_1: {kp_max: 5.2, flare_class: "M-Class (80%)", hazard_level: "Moderate"},
-            day_3: {kp_max: 4.0, flare_class: "C-Class (90%)", hazard_level: "Low"}
+            day_3: {kp_max: 4.0, flare_class: "C-Class (90%)", hazard_level: "Low"},
+            day_7: {kp_max: 3.0, flare_class: "C-Class (50%)", hazard_level: "Low"}
         },
         historical_trends: [
             {date: "07-01", solar_flares: 8, geomagnetic_storms: 2, downtime_hours: 1.2},
