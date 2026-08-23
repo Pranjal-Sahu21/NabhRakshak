@@ -1,0 +1,240 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Galaxy from './Galaxy';
+
+const MotionDiv = motion.div as React.FC<any>;
+const MotionP = motion.p as React.FC<any>;
+const MotionG = motion.g as React.FC<any>;
+
+interface LoadingScreenProps {
+  onComplete: () => void;
+  onSweepStart?: () => void;
+}
+
+const LoadingScreen = ({ onComplete, onSweepStart }: LoadingScreenProps) => {
+  const [progress, setProgress] = useState(0);
+  const [statusIndex, setStatusIndex] = useState(0);
+  const [loadingComplete, setLoadingComplete] = useState(false);
+
+  const steps = [
+    'Connecting to satellite network...',
+    'Loading orbital telemetry data...',
+    'Initializing tracking filters...',
+    'Preparing mission dashboard...'
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            setLoadingComplete(true);
+          }, 400); // slight pause before sweep
+          return 100;
+        }
+        const next = prev + (0.6 + Math.random() * 0.5);
+        return next > 100 ? 100 : next;
+      });
+    }, 40);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (progress < 25) setStatusIndex(0);
+    else if (progress < 55) setStatusIndex(1);
+    else if (progress < 85) setStatusIndex(2);
+    else setStatusIndex(3);
+  }, [progress]);
+
+  useEffect(() => {
+    if (loadingComplete && onSweepStart) {
+      onSweepStart();
+    }
+  }, [loadingComplete, onSweepStart]);
+
+  const orbitVariants = {
+    animate: {
+      rotate: 360,
+      transition: {
+        duration: 3,
+        repeat: Infinity,
+        ease: 'linear'
+      }
+    }
+  };
+
+  const pulseVariants = {
+    animate: {
+      scale: [1, 1.2, 1],
+      opacity: [0.5, 1, 0.5],
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'easeInOut'
+      }
+    }
+  };
+
+  const floatVariants = {
+    animate: {
+      y: [-10, 10, -10],
+      transition: {
+        duration: 4,
+        repeat: Infinity,
+        ease: 'easeInOut'
+      }
+    }
+  };
+
+  return (
+    <>
+      <MotionDiv
+        initial={{ clipPath: 'inset(0 0 0 0)' }}
+        animate={loadingComplete ? { clipPath: 'inset(0 0 0 150%)' } : {}}
+        transition={{ duration: 3.0, ease: [0.76, 0, 0.24, 1] }}
+        onAnimationComplete={() => {
+          if (loadingComplete) {
+            onComplete();
+          }
+        }}
+        className="fixed inset-0 bg-[#08080a] flex items-center justify-center z-[999] overflow-hidden"
+      >
+        {/* Galaxy WebGL Background */}
+        <Galaxy
+          glowIntensity={0.08}
+          density={2.0}
+          mouseInteraction={false}
+          speed={0.25}
+          rotationSpeed={0.02}
+          className="absolute inset-0 w-full h-full pointer-events-none opacity-40"
+        />
+
+        {/* Main Loading Content */}
+        <MotionDiv
+          animate={loadingComplete ? { filter: 'blur(15px)', opacity: 0, scale: 0.95 } : { filter: 'blur(0px)', opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1] }}
+          className="absolute inset-0 flex flex-col items-center justify-between pt-48 pb-20"
+        >
+          {/* Logo and Orbits (Center Group) */}
+          <div className="flex flex-col items-center">
+            {/* Orbital System */}
+            <div className="relative w-32 h-32 mb-8">
+              {/* Central Earth */}
+              <div className="absolute inset-0 w-20 h-20 m-auto rounded-full overflow-hidden border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                <MotionDiv
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                  className="w-full h-full"
+                >
+                  <img
+                    src="/assets/earth-blue-marble.jpg"
+                    alt="Earth"
+                    className="w-full h-full object-cover scale-[1.15]"
+                  />
+                </MotionDiv>
+              </div>
+
+              {/* Orbit Ring 1 (Inner) */}
+              <MotionDiv
+                variants={orbitVariants}
+                animate="animate"
+                className="absolute inset-0 border-2 border-white/20 rounded-full"
+              >
+                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full shadow-lg shadow-red-500/80" />
+              </MotionDiv>
+
+              {/* Orbit Ring 2 (Middle) */}
+              <MotionDiv
+                variants={orbitVariants}
+                animate="animate"
+                className="absolute inset-0 border-2 border-white/15 rounded-full scale-125"
+                style={{ animationDelay: '1s' }}
+              >
+                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full shadow-lg shadow-orange-500/80" />
+              </MotionDiv>
+
+              {/* Orbit Ring 3 (Outer) */}
+              <MotionDiv
+                variants={orbitVariants}
+                animate="animate"
+                className="absolute inset-0 border border-white/10 rounded-full scale-150"
+                style={{ animationDelay: '2s' }}
+              >
+                <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-red-600 rounded-full shadow-lg shadow-red-600/80" />
+              </MotionDiv>
+            </div>
+
+            {/* Logo and Text */}
+            <div className="flex items-center justify-center space-x-3 text-center">
+              <img
+                src="/assets/nabhrakshak-logo.svg"
+                alt="NabhRakshak Logo"
+                className="w-12 h-12 object-contain"
+              />
+              <div className="text-left">
+                <h1 className="text-3xl font-normal text-white">NabhRakshak</h1>
+                <p className="text-sm text-gray-400">Space Debris Monitoring</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Loader Bar & Changing Text (Bottom Group) */}
+          <div className="flex flex-col items-center">
+            {/* Animated Loading Status */}
+            <div className="h-6 mb-3">
+              <AnimatePresence mode="wait">
+                <MotionP
+                  key={statusIndex}
+                  className="text-gray-400 text-xs font-mono tracking-widest uppercase"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {steps[statusIndex]}
+                </MotionP>
+              </AnimatePresence>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-64 h-1 bg-dark-lighter rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-neon-blue to-neon-purple transition-[width] duration-300 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+        </MotionDiv>
+
+      </MotionDiv>
+
+      {/* Sweeping Satellite Overlay */}
+      {loadingComplete && (
+        <MotionDiv
+          initial={{ left: '0%', opacity: 0 }}
+          animate={{
+            left: '150%',
+            opacity: [0, 1, 1, 1]
+          }}
+          style={{ x: '-50%', y: '-50%', top: '50%' }}
+          transition={{
+            left: { duration: 3.0, ease: [0.76, 0, 0.24, 1] },
+            opacity: { times: [0, 0.1, 0.9, 1], duration: 3.0, ease: 'linear' }
+          }}
+          className="fixed z-[1000] pointer-events-none"
+        >
+          {/* Real Satellite Image */}
+          <img
+            src="/assets/satellite.png"
+            alt="Satellite"
+            className="w-36 h-36 object-contain transform rotate-[25deg] drop-shadow-[0_0_25px_rgba(0,210,255,0.5)]"
+          />
+        </MotionDiv>
+      )}
+    </>
+  );
+};
+
+export default LoadingScreen;
