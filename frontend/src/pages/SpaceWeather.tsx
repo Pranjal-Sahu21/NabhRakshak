@@ -529,9 +529,9 @@ const SpaceWeather = () => {
         {/* Kp Gauge and predictions */}
         <div className="bg-[#0c0c0e]/95 border border-[#2a2a2a] rounded-xl p-5 shadow-lg flex flex-col items-center justify-center">
           <h4 className="text-sm font-normal text-white uppercase tracking-wider mb-4 self-start">Current Geomagnetic Index</h4>
-          <div className="relative w-40 h-40 flex items-center justify-center">
+          <div className="relative w-full max-w-[160px] aspect-square flex items-center justify-center">
             {/* SVG Arc Gauge */}
-            <svg className="w-full h-full transform -rotate-90">
+            <svg viewBox="0 0 160 160" className="w-full h-full transform -rotate-90">
               <circle cx="80" cy="80" r="60" stroke="#1c1b22" strokeWidth="12" fill="transparent" />
               <circle cx="80" cy="80" r="60" stroke="#80BCFF" strokeWidth="12" fill="transparent"
                       strokeDasharray={2 * Math.PI * 60}
