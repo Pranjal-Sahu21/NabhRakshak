@@ -15,6 +15,7 @@ const LoadingScreen = ({ onComplete, onSweepStart }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
   const [statusIndex, setStatusIndex] = useState(0);
   const [loadingComplete, setLoadingComplete] = useState(false);
+  const [earthLoaded, setEarthLoaded] = useState(false);
 
   const steps = [
     'Connecting to satellite network...',
@@ -23,6 +24,35 @@ const LoadingScreen = ({ onComplete, onSweepStart }: LoadingScreenProps) => {
     'Preparing mission dashboard...'
   ];
 
+  const satelliteRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!earthLoaded) return;
+    let animId: number;
+    const startTime = Date.now();
+    const period = 4000; // 4 seconds for one full orbit
+
+    const tick = () => {
+      const elapsed = Date.now() - startTime;
+      const angle = (elapsed / period) * 2 * Math.PI;
+
+      // Clockwise ellipse path coordinates
+      const x = 60 * Math.sin(angle);
+      const y = -24 * Math.cos(angle);
+      // y < 0 is the top half (behind Earth), y >= 0 is the bottom half (in front of Earth)
+      const zIndex = y < 0 ? '5' : '20';
+
+      if (satelliteRef.current) {
+        satelliteRef.current.style.transform = `translate(${x}px, ${y}px)`;
+        satelliteRef.current.style.zIndex = zIndex;
+      }
+      animId = requestAnimationFrame(tick);
+    };
+
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [earthLoaded]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress(prev => {
@@ -30,13 +60,13 @@ const LoadingScreen = ({ onComplete, onSweepStart }: LoadingScreenProps) => {
           clearInterval(interval);
           setTimeout(() => {
             setLoadingComplete(true);
-          }, 400); // slight pause before sweep
+          }, 250); // slight pause before sweep
           return 100;
         }
-        const next = prev + (0.6 + Math.random() * 0.5);
+        const next = prev + (1.2 + Math.random() * 1.0);
         return next > 100 ? 100 : next;
       });
-    }, 40);
+    }, 60);
     return () => clearInterval(interval);
   }, []);
 
@@ -103,7 +133,7 @@ const LoadingScreen = ({ onComplete, onSweepStart }: LoadingScreenProps) => {
         {/* Galaxy WebGL Background */}
         <Galaxy
           glowIntensity={0.08}
-          density={2.0}
+          density={1.2}
           mouseInteraction={false}
           speed={0.25}
           rotationSpeed={0.02}
@@ -121,7 +151,7 @@ const LoadingScreen = ({ onComplete, onSweepStart }: LoadingScreenProps) => {
             {/* Orbital System */}
             <div className="relative w-32 h-32 mb-8">
               {/* Central Earth */}
-              <div className="absolute inset-0 w-20 h-20 m-auto rounded-full overflow-hidden border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+              <div className="absolute inset-0 w-20 h-20 m-auto rounded-full overflow-hidden border border-blue-500/30 bg-[#080f1e] shadow-[0_0_20px_rgba(59,130,246,0.4)] z-10">
                 <MotionDiv
                   animate={{ rotate: 360 }}
                   transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
@@ -131,38 +161,37 @@ const LoadingScreen = ({ onComplete, onSweepStart }: LoadingScreenProps) => {
                     src="/assets/earth-blue-marble.jpg"
                     alt="Earth"
                     className="w-full h-full object-cover scale-[1.15]"
+                    onLoad={() => setEarthLoaded(true)}
                   />
                 </MotionDiv>
               </div>
 
-              {/* Orbit Ring 1 (Inner) */}
-              <MotionDiv
-                variants={orbitVariants}
-                animate="animate"
-                className="absolute inset-0 border-2 border-white/20 rounded-full"
-              >
-                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full shadow-lg shadow-red-500/80" />
-              </MotionDiv>
+              {/* Ellipse Ring (Direct sibling, visible only after Earth loads) */}
+              {earthLoaded && (
+                <MotionDiv
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                  className="absolute inset-0 m-auto border border-white/15 rounded-full w-[120px] h-[48px] pointer-events-none z-0"
+                />
+              )}
 
-              {/* Orbit Ring 2 (Middle) */}
-              <MotionDiv
-                variants={orbitVariants}
-                animate="animate"
-                className="absolute inset-0 border-2 border-white/15 rounded-full scale-125"
-                style={{ animationDelay: '1s' }}
-              >
-                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full shadow-lg shadow-orange-500/80" />
-              </MotionDiv>
-
-              {/* Orbit Ring 3 (Outer) */}
-              <MotionDiv
-                variants={orbitVariants}
-                animate="animate"
-                className="absolute inset-0 border border-white/10 rounded-full scale-150"
-                style={{ animationDelay: '2s' }}
-              >
-                <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-red-600 rounded-full shadow-lg shadow-red-600/80" />
-              </MotionDiv>
+              {/* Revolving Satellite (Direct sibling sharing stacking context with Earth, visible only after Earth loads) */}
+              {earthLoaded && (
+                <MotionDiv
+                  ref={satelliteRef}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4 }}
+                  className="absolute inset-0 m-auto w-8 h-8 flex items-center justify-center pointer-events-none"
+                >
+                  <img
+                    src="/assets/satellite.png"
+                    alt="Revolving Satellite"
+                    className="w-8 h-8 object-contain transform rotate-[25deg] drop-shadow-[0_0_8px_rgba(0,210,255,0.6)]"
+                  />
+                </MotionDiv>
+              )}
             </div>
 
             {/* Logo and Text */}

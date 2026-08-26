@@ -333,8 +333,10 @@ export default function Galaxy({
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, [
-    focal,
-    rotation,
+    focal[0],
+    focal[1],
+    rotation[0],
+    rotation[1],
     starSpeed,
     density,
     hueShift,
